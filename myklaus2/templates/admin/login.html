@@ -1,0 +1,33 @@
+{% extends "layout.html" %}
+
+{% block main %}
+<div class="signin text-center">
+    <form method="POST" action="" class="form-signin">
+        {{ form.hidden_tag() }}
+        <h1 class="h3 mb-3 font-weight-normal">Administrations Login</h1>
+        {{ form.user.label(class="sr-only") }}
+        {% if form.user.errors %}
+            {{ form.user(class="form-control is-invalid", placeholder=form.user.label.text, autofocus="") }}
+        {% else %}
+            {{ form.user(class="form-control", placeholder=form.user.label.text, autofocus="") }}
+            <div class="invalid-feedback">
+            {% for error in form.user.errors %}
+                <span>{{ error }}</span>
+            {% endfor %}
+            </div>
+        {% endif %}
+        {{ form.pwd.label(class="sr-only") }}
+        {% if form.pwd.errors %}
+            {{ form.pwd(class="form-control is-invalid", placeholder=form.pwd.label.text, autofocus="") }}
+        {% else %}
+            {{ form.pwd(class="form-control", placeholder=form.pwd.label.text, autofocus="") }}
+            <div class="invalid-feedback">
+            {% for error in form.pwd.errors %}
+                <span>{{ error }}</span>
+            {% endfor %}
+            </div>
+        {% endif %}
+        {{ form.submit(class="btn btn-lg btn-primary btn-block") }}
+    </form>
+</div>
+{% endblock main %}

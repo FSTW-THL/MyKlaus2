@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block main_row %}
+<nav class="col-md-2 d-none d-md-block bg-light sidebar">
+    <div class="sidebar-sticky">
+        {% block sidebar %}{% endblock sidebar %}
+    </div>
+</nav>
+<main role="main" class="col-md-9 ml-sm-auto col-lg-10 pt-3 px-4">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    {% block main %}{% endblock main %}
+</main>
+{% endblock main_row %}

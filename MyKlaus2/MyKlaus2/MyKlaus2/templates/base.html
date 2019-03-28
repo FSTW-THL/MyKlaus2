@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="de">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -6,7 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <link rel="icon" href="{{ url_for('static', filename='favicon.png') }}">
+    <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}">
 
     <title>MyKlaus2 - Klausurenverwaltung - FSTW TH Lübeck{% if title %} - {{ title }}{% endif %}</title>
 
@@ -20,19 +20,20 @@
 </head>
 <body>
     <nav class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0">
-        <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="{{ url_for('main.home') }}">
-            <img src="{{ url_for('static', filename='favicon.png') }}" width="30" height="30" class="d-inline-block align-top" alt=""/>
+        <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="{{ url_for('home') }}">
             MyKlaus2 - Klausurverwaltung
         </a>
         <!--<input class="form-control form-control-dark w-100" type="text" placeholder="Suchen..."/>-->
         <ul class="navbar-nav px-3">
             <li class="nav-item text-nowrap">
-                <a class="nav-link" href="{{ url_for('admin.login') }}">Admin</a>
+                <a href="{{ url_for('about') }}">
+                    <img src="{{ url_for('static', filename='favicon.svg') }}" width="48" height="48" class="d-inline-block align-top" alt="&Uuml;ber uns!" />
+                </a>
             </li>
         </ul>
     </nav>
 
-    <div class="container-fluid">
+    <div class="container-fluid h-100">
         <div class="row">
             {% block main_row %}{% endblock main_row %}
         </div>

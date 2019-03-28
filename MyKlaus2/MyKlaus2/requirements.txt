@@ -1,1 +1,10 @@
-Flask<1
+Click==7.0
+Flask==0.12.4
+Flask-WTF==0.14.2
+itsdangerous==1.1.0
+Jinja2==2.10
+MarkupSafe==1.1.1
+pip==18.1
+setuptools==40.6.2
+Werkzeug==0.15.1
+WTForms==2.2.1

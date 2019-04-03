@@ -20,13 +20,13 @@
 </head>
 <body>
     <nav class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0">
-        <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="{{ url_for('home') }}">
+        <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="{{ url_for('main.home') }}">
             MyKlaus2 - Klausurverwaltung
         </a>
         <!--<input class="form-control form-control-dark w-100" type="text" placeholder="Suchen..."/>-->
         <ul class="navbar-nav px-3">
             <li class="nav-item text-nowrap">
-                <a href="{{ url_for('about') }}">
+                <a href="{{ url_for('main.about') }}">
                     <img src="{{ url_for('static', filename='favicon.svg') }}" width="48" height="48" class="d-inline-block align-top" alt="&Uuml;ber uns!" />
                 </a>
             </li>

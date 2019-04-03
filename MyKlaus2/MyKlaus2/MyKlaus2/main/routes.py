@@ -1,13 +1,10 @@
-"""
-Routes and views for the flask application.
-"""
-
 from datetime import datetime
-from flask import render_template
-from MyKlaus2 import app
+from flask import Blueprint, render_template
 
-@app.route('/')
-@app.route('/home')
+
+main = Blueprint("main", __name__);
+
+@main.route('/')
 def home():
     """Renders the home page."""
     return render_template(
@@ -17,7 +14,7 @@ def home():
         year=datetime.now().year,
     )
 
-@app.route('/contact')
+@main.route('/contact')
 def contact():
     """Renders the contact page."""
     return render_template(
@@ -27,7 +24,7 @@ def contact():
         showing='Your contact page.'
     )
 
-@app.route('/about')
+@main.route('/about')
 def about():
     """Renders the about page."""
     return render_template(

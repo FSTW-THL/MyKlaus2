@@ -36,6 +36,9 @@
     <Compile Include="MyKlaus2\main\__init__.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="MyKlaus2\config.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="runserver.py" />
     <Compile Include="MyKlaus2\__init__.py" />
     <Compile Include="MyKlaus2\main\routes.py" />
@@ -52,6 +55,10 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="MyKlaus2\static\css\dashboard.css" />
+    <Content Include="MyKlaus2\static\favicon.svg" />
+    <Content Include="MyKlaus2\static\settings.ini">
+      <SubType>Code</SubType>
+    </Content>
     <Content Include="MyKlaus2\static\documents\TestPDF.pdf" />
     <Content Include="MyKlaus2\templates\admin\login.html" />
     <Content Include="MyKlaus2\templates\base.html" />

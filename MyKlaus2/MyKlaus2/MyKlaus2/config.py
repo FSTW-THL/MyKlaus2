@@ -1,9 +1,12 @@
 import configparser
+import os
+from flask import url_for
 
 
 config = configparser.ConfigParser()
-config.read('settings.ini')
-
+#print({{url_for('static', filename='settings.ini')}})
+#config.read(url_for('static', filename='settings.ini'))
+config.read(os.getcwd()+"\MyKlaus2\static\settings.ini")
 
 class Config:
     SECRET_KEY = config['DEFAULT']['SECRET_KEY']

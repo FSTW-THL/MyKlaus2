@@ -130,4 +130,4 @@ dmypy.json
 *.vs
 
 # Settings
-settings.ini
+*.ini

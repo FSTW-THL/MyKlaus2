@@ -28,9 +28,15 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="initdb.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="MyKlaus2\admin\forms.py" />
     <Compile Include="MyKlaus2\admin\routes.py" />
     <Compile Include="MyKlaus2\admin\__init__.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MyKlaus2\database.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="MyKlaus2\main\__init__.py">
@@ -39,9 +45,15 @@
     <Compile Include="MyKlaus2\config.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="MyKlaus2\models.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="runserver.py" />
     <Compile Include="MyKlaus2\__init__.py" />
     <Compile Include="MyKlaus2\main\routes.py" />
+    <Compile Include="wsgi.py">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="MyKlaus2\" />

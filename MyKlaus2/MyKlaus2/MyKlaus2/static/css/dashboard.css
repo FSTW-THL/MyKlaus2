@@ -14,12 +14,22 @@ body {
 
 .sidebar {
   position: fixed;
+  z-index: 100; /* Behind the navbar */
+  padding: 0;
+}
+
+.sidebar-left {
   top: 0;
   bottom: 0;
   left: 0;
-  z-index: 100; /* Behind the navbar */
-  padding: 0;
   box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+}
+
+.sidebar-right {
+  top: 0;
+  bottom: 0;
+  right: 0;
+  box-shadow: inset 1px 0 0 rgba(0, 0, 0, .1);
 }
 
 .sidebar-sticky {
@@ -54,6 +64,68 @@ body {
 .sidebar-heading {
   font-size: .75rem;
   text-transform: uppercase;
+}
+
+/*
+ * Sidebar List
+ */
+
+ul, menu, dir {
+    padding-inline-start: 30px;
+}
+
+.tree li {
+  margin: 0px 0;
+  list-style-type: none;
+  position: relative;
+  padding: 10px 5px 0px 0px;
+}
+
+.tree li::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  width: 1px;
+  height: 100%;
+  right: auto;
+  left: -18px;
+  border-left: 1px solid #ccc;
+  bottom: 50px;
+}
+
+.tree li::after {
+  content: '';
+  position: absolute;
+  top: 23px;
+  width: 14px;
+  height: 20px;
+  right: auto;
+  left: -18px;
+  border-top: 1px solid #ccc;
+}
+
+.tree li a {
+  display: inline-block;
+  border: 0px solid #ccc;
+  text-decoration: none;
+  color: #666;
+  border-radius: 5px;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+}
+/*Remove connectors before root*/
+.tree > ul > li::before, .tree > ul > li::after {
+  border: 0;
+}
+/*Remove connectors after last child*/
+.tree li:last-child::before {
+  height: 23px;
+}
+/*Time for some hover effects*/
+
+/*Connector styles on hover*/
+.tree li a:hover + ul li::after, .tree li a:hover + ul li::before, .tree li a:hover + ul::before, .tree li a:hover + ul ul::before {
+  border-color: #94a0b4;
 }
 
 /*

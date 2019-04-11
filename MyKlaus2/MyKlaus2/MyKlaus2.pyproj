@@ -50,19 +50,25 @@
     <Folder Include="MyKlaus2\static\" />
     <Folder Include="MyKlaus2\static\css\" />
     <Folder Include="MyKlaus2\static\documents\" />
+    <Folder Include="MyKlaus2\static\imgs\" />
     <Folder Include="MyKlaus2\templates\" />
     <Folder Include="MyKlaus2\templates\admin\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="MyKlaus2\static\css\dashboard.css" />
     <Content Include="MyKlaus2\static\favicon.svg" />
+    <Content Include="MyKlaus2\static\imgs\folder-close.svg" />
+    <Content Include="MyKlaus2\static\imgs\folder-open.svg" />
+    <Content Include="MyKlaus2\static\imgs\written_paper.svg" />
+    <Content Include="MyKlaus2\static\imgs\paper.svg" />
     <Content Include="MyKlaus2\static\settings.ini">
       <SubType>Code</SubType>
     </Content>
     <Content Include="MyKlaus2\static\documents\TestPDF.pdf" />
     <Content Include="MyKlaus2\templates\admin\login.html" />
     <Content Include="MyKlaus2\templates\base.html" />
-    <Content Include="MyKlaus2\templates\layout_sb.html" />
+    <Content Include="MyKlaus2\templates\layout_double_sidebar.html" />
+    <Content Include="MyKlaus2\templates\layout_single_sidebar.html" />
     <Content Include="requirements.txt" />
     <Content Include="MyKlaus2\templates\about.html" />
     <Content Include="MyKlaus2\templates\contact.html" />

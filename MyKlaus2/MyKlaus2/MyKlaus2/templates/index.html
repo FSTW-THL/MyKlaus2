@@ -1,32 +1,61 @@
-{% extends "layout_sb.html" %}
+{% extends "layout_double_sidebar.html" %}
 
-{% block sidebar %}
+{% block sidebar_left %}
 <ul class="nav flex-column">
     <li class="nav-item">
         <a class="nav-link active" href="{{ url_for('main.home') }}">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file">
-                <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
-                <polyline points="13 2 13 9 20 9"></polyline>
-            </svg>
+            <img src="{{ url_for('static', filename='imgs/paper.svg') }}" />
             Alle Dokumente anzeigen
             <span class="sr-only">(current)</span>
         </a>
     </li>
 
-    <li class="nav-item">
+    <li class="tree">
+        <ul class="nav-link">
+            <li>
+                <img src="{{ url_for('static', filename='imgs/written_paper.svg') }}" />
+                <a href="#">F&auml;cher</a>
+                <ul>
+                    <li>
+                        <img src="{{ url_for('static', filename='imgs/folder-close.svg') }}" />
+                        <a href="#">E &amp; I</a>
+                        <ul>
+                            <li>
+                                <img src="{{ url_for('static', filename='imgs/folder-close.svg') }}" />
+                                <a href="#">Mod 1</a>
+                            </li>
+                            <li>
+                                <img src="{{ url_for('static', filename='imgs/folder-close.svg') }}" />
+                                <a href="#">Mod 2</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li>
+                        <img src="{{ url_for('static', filename='imgs/folder-close.svg') }}" />
+                        <a href="#">AN</a>
+                        <ul>
+                            <li>
+                                <img src="{{ url_for('static', filename='imgs/folder-close.svg') }}" />
+                                <a href="#">Mod 1</a>
+                            </li>
+                            <li>
+                                <img src="{{ url_for('static', filename='imgs/folder-close.svg') }}" />
+                                <a href="#">Mod 2</a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+    </li>
+    <!--<li class="nav-item">
         <a class="nav-link" href="{{ url_for('main.home') }}">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file-text">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                <polyline points="14 2 14 8 20 8"></polyline>
-                <line x1="16" y1="13" x2="8" y2="13"></line>
-                <line x1="16" y1="17" x2="8" y2="17"></line>
-                <polyline points="10 9 9 9 8 9"></polyline>
-            </svg>
+            <img src="{{ url_for('static', filename='imgs/written_paper.svg') }}" />
             F&auml;cher
         </a>
-    </li>
+    </li>-->
 </ul>
-{% endblock sidebar %}
+{% endblock sidebar_left %}
 
 {% block main %}
 <h2 class="page-header">{{ showing }}</h2>
@@ -105,3 +134,24 @@
             style="width:100%;height:750px" />
 </div>
 {% endblock main %}
+
+{% block sidebar_right %}
+{% endblock sidebar_right %}
+
+{% block scripts %}
+<script>
+    $(function () {
+        $('.tree li').hide();
+        $('.tree li:first').show();
+        $('.tree li').on('click', function (e) {
+            var children = $(this).find('> ul > li');
+            if (children.is(":visible")) children.hide('fast');
+            else children.show('fast');
+            var img = $(this).find('> img');
+            if (img.attr("src") == "{{ url_for('static', filename='imgs/folder-close.svg') }}") img.attr("src", "{{ url_for('static', filename='imgs/folder-open.svg') }}");
+            else if (img.attr("src") == "{{ url_for('static', filename='imgs/folder-open.svg') }}") img.attr("src", "{{ url_for('static', filename='imgs/folder-close.svg') }}");
+            e.stopPropagation();
+        });
+    });
+</script>
+{% endblock scripts %}

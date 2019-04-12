@@ -1,5 +1,15 @@
 {% extends "layout_double_sidebar.html" %}
 
+{% block styles %}
+<style>
+    .svg-img {padding-left:28px;line-height:24px;}
+    .folder-close{background:url("{{ url_for('static', filename='imgs/folder-close.svg') }}") no-repeat left top;}
+    .folder-open{background:url("{{ url_for('static', filename='imgs/folder-open.svg') }}") no-repeat left top;}
+    .paper{background:url("{{ url_for('static', filename='imgs/paper.svg') }}") no-repeat left top;}
+    .written-paper{background: url("{{ url_for('static', filename='imgs/written_paper.svg') }}") no-repeat left top;}
+</style>
+{% endblock styles%}
+
 {% block sidebar_left %}
 <ul class="nav flex-column">
     <li class="nav-item">
@@ -13,38 +23,25 @@
     <li class="tree">
         <ul class="nav-link">
             <li>
-                <img src="{{ url_for('static', filename='imgs/written_paper.svg') }}" />
-                <a href="#">F&auml;cher</a>
+                <a class="svg-img written-paper" href="#">Fachbereiche</a>
+                {% if departments %}
                 <ul>
+                    {% for d in departments %}
                     <li>
-                        <img src="{{ url_for('static', filename='imgs/folder-close.svg') }}" />
-                        <a href="#">E &amp; I</a>
+                        <a class="svg-img folder-close" href="#">{{ d.name }}</a>
+                        {% if d.coursesOfStudy %}
                         <ul>
+                            {% for cos in d.coursesOfStudy %}
                             <li>
-                                <img src="{{ url_for('static', filename='imgs/folder-close.svg') }}" />
-                                <a href="#">Mod 1</a>
+                                <a class="svg-img folder-close" href="#">{{ cos.name }}</a>
                             </li>
-                            <li>
-                                <img src="{{ url_for('static', filename='imgs/folder-close.svg') }}" />
-                                <a href="#">Mod 2</a>
-                            </li>
+                            {% endfor %}
                         </ul>
+                        {% endif %}
                     </li>
-                    <li>
-                        <img src="{{ url_for('static', filename='imgs/folder-close.svg') }}" />
-                        <a href="#">AN</a>
-                        <ul>
-                            <li>
-                                <img src="{{ url_for('static', filename='imgs/folder-close.svg') }}" />
-                                <a href="#">Mod 1</a>
-                            </li>
-                            <li>
-                                <img src="{{ url_for('static', filename='imgs/folder-close.svg') }}" />
-                                <a href="#">Mod 2</a>
-                            </li>
-                        </ul>
-                    </li>
+                    {% endfor %}
                 </ul>
+                {% endif %}
             </li>
         </ul>
     </li>
@@ -125,7 +122,7 @@
         </ul>
     </nav>
     {% else %}
-    <h4>Derzeit liegen keine Dokuments vor.</h4>
+    <h4>Derzeit liegen keine Dokumente vor.</h4>
     {% endif %}
 </div>
 <div class="page">
@@ -147,9 +144,9 @@
             var children = $(this).find('> ul > li');
             if (children.is(":visible")) children.hide('fast');
             else children.show('fast');
-            var img = $(this).find('> img');
-            if (img.attr("src") == "{{ url_for('static', filename='imgs/folder-close.svg') }}") img.attr("src", "{{ url_for('static', filename='imgs/folder-open.svg') }}");
-            else if (img.attr("src") == "{{ url_for('static', filename='imgs/folder-open.svg') }}") img.attr("src", "{{ url_for('static', filename='imgs/folder-close.svg') }}");
+            var a = $(this).find('> a');
+            if (a.attr("class") == "svg-img folder-close") a.attr("class", "svg-img folder-open");
+            else if (a.attr("class") == "svg-img folder-open") a.attr("class", "svg-img folder-close");
             e.stopPropagation();
         });
     });

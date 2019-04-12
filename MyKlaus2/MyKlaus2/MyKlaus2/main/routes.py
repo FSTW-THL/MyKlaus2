@@ -1,22 +1,24 @@
 from datetime import datetime
 from flask import Blueprint, render_template
+from MyKlaus2.database import db_session
+from MyKlaus2.models import Exam, Department
 
 
 main = Blueprint("main", __name__);
 
 @main.route('/')
-def home():
-    """Renders the home page."""
+@main.route('/<string:search>', methods=['GET', 'POST'])
+def home(search=None):
+    departments = db_session.query(Department).order_by(Department.name).all()
     return render_template(
         'index.html',
         title='Home Page',
         showing='Fächer',
-        year=datetime.now().year,
+        departments=departments,
     )
 
 @main.route('/contact')
 def contact():
-    """Renders the contact page."""
     return render_template(
         'contact.html',
         title='Contact',
@@ -26,7 +28,6 @@ def contact():
 
 @main.route('/about')
 def about():
-    """Renders the about page."""
     return render_template(
         'about.html',
         title='About',

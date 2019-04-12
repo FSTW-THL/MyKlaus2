@@ -10,13 +10,13 @@ class SemesterEnum(enum.Enum):
 
 #Assoziations Tabellen
 CourseOfStudy_has_Course = Table('CourseOfStudy_has_Course', Base.metadata,
-    Column('CourseOfStudy_idCourseOfStudy', Integer, ForeignKey('CourseOfStudy.idCourseOfStudy')),
-    Column('Course_idCourse', Integer, ForeignKey('Course.idCourse'))
+    Column('CourseOfStudy_idCourseOfStudy', Integer, ForeignKey('CourseOfStudy.idCourseOfStudy'), nullable=False),
+    Column('Course_idCourse', Integer, ForeignKey('Course.idCourse'), nullable=False)
 )
 
 Course_has_Professor = Table('Course_has_Professor', Base.metadata,
-    Column('Course_idCourse', Integer, ForeignKey('Course.idCourse')),
-    Column('Professor_idProfessor', Integer, ForeignKey('Professor.idProfessor'))
+    Column('Course_idCourse', Integer, ForeignKey('Course.idCourse'), nullable=False),
+    Column('Professor_idProfessor', Integer, ForeignKey('Professor.idProfessor'), nullable=False)
 )
 
 #Tabellen
@@ -25,7 +25,7 @@ class Department(Base):
 
     idDepartment = Column(Integer, primary_key=True)
     name = Column(String(128), unique=True, nullable=False)
-    coursesOfStudy = relationship('CourseOfStudy', back_populates='department', lazy=True)
+    coursesOfStudy = relationship('CourseOfStudy', back_populates='department', lazy=True, order_by='CourseOfStudy.name')
 
     def __init__(self, name=None):
         self.name = name
@@ -45,7 +45,7 @@ class CourseOfStudy(Base):
 
     idCourseOfStudy = Column(Integer, primary_key=True)
     name = Column(String(255), unique=True, nullable=False)
-    Department_idDepartment = Column(Integer, ForeignKey('Department.idDepartment'))
+    Department_idDepartment = Column(Integer, ForeignKey('Department.idDepartment'), nullable=False)
     department = relationship("Department", back_populates='coursesOfStudy', uselist=False)
 
     courses = relationship("Course", secondary=CourseOfStudy_has_Course, back_populates="coursesOfStudy")
@@ -124,19 +124,22 @@ class Exam(Base):
     filename = Column(String(255), nullable=False)
     filePath = Column(String(4096), nullable=False)
     isVerified = Column(Boolean, nullable=False, default=False)
-    Course_idCourse = Column(Integer, ForeignKey('Course.idCourse'))
+    ExamType_idExamType = Column(Integer, ForeignKey('ExamType.idExamType'), nullable=False)
+    examType = relationship("ExamType", back_populates='exams', uselist=False)
+    Course_idCourse = Column(Integer, ForeignKey('Course.idCourse'), nullable=False)
     course = relationship('Course', back_populates='exams', uselist=False)
 
-    def __init__(self, semester, year, filename, filePath, course, isVerified=False):
+    def __init__(self, semester, year, filename, filePath, examType, course, isVerified=False):
         self.semester = semester
         self.year = year
         self.filename = filename
         self.filePath = filePath
+        self.examType = examType
         self.course = course
         self.isVerified = isVerified
 
     def __repr__(self):
-        return '<Exam(idExam=%s, semester="%s", year=%d, filename="%s", filePath="%s", isVerified=%d, course="%s")>' % (self.idExam, self.semester, self.year, self.filename, self.filePath, self.isVerified, self.course)
+        return '<Exam(idExam=%s, semester="%s", year=%d, filename="%s", filePath="%s", examType="%s", isVerified=%d, course="%s")>' % (self.idExam, self.semester, self.year, self.filename, self.examType, self.filePath, self.isVerified, self.course)
 
     def to_dict(self):
         return {
@@ -147,4 +150,24 @@ class Exam(Base):
             'filePath': self.filePath,
             'isVerified': self.isVerified,
             'course': self.course
+        }
+
+class ExamType(Base):
+    __tablename__ = 'ExamType'
+
+    idExamType = Column(Integer, primary_key=True)
+    name = Column(String(128), unique=True, nullable=False)
+    exams = relationship('Exam', back_populates='examType', lazy=True)
+
+    def __init__(self, name):
+        self.name = name
+
+    def __repr__(self):
+        return '<ExamType(idExamType=%d, name="%s")>' % (self.idExamType, self.name)
+
+    def to_dict(self):
+        return {
+            'idExamType': self.idExamType,
+            'name': self.name,
+            'exams': self.exams
         }

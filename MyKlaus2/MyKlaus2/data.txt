@@ -1,0 +1,22 @@
+{
+    "DepAndCoS": {
+        "Department1": [
+            "CourseOfStudy1",
+            "CourseOfStudy2"
+        ],
+        "Department2": [
+            "CourseOfStudy3"
+        ]
+    },
+    "Prof": [
+        {"firstname": "Firstname", "lastname": "Prof1"}
+    ],
+    "Courses": [
+        "Course1"
+    ],
+    "ExamAndTypes": {
+        "Klausur": [
+            {"semester": "WS", "year": 2000, "filePath": "Course1/Prof1_WS_2000.pdf", "Course": "Course1", "docent": "Prof1"}
+		]
+    }
+}

@@ -22,61 +22,57 @@ db_session = scoped_session(
 Base = declarative_base()
 
 def init_db():
-    data = {
-        'Elektrotechnik und Informatik': [
-            'Elektrotechnik - Energiesysteme und Automation',
-            'Elektrotechnik - Kommunikationssysteme',
-            'Informatik/ Softwaretechnik',
-            'Informationstechnologie und Design',
-            'Medieninformatik Online',
-            'Regenerative Energien Online',
-            'Angewandte Informationstechnik'],
-        'Angewandte Naturwissenschaften': [
-            'Biomedizintechnik',
-            'Chemie- und Umwelttechnik (auslaufend)',
-            'Hörakustik',
-            'Hörakustik und Audiologische Technik',
-            'Physikalische Technik',
-            'Biomedical Engineering',
-            'Technische Biochemie',
-            'Angewandte Chemie',
-            'Umweltingenieurwesen und -management',
-            'Regulatory Affairs'],
-        'Bauwesen': [
-            'Environmental Engineering',
-            'Bauingenieurwesen',
-            'Architektur',
-            'Städtebau und Ortsplanung',
-            'Energie- und Gebäudeingenieurwesen'],
-        'Maschinenbau und Wirtschaft': [
-            'Betriebswirtschaftslehre',
-            'Maschinenbau',
-            'Mechanical Engineering',
-            'Wirtschaftsingenieurwesen',
-            'Wirtschaftsingenieurwesen Lebensmittelindustrie (vormals Food Processing)',
-            'Wirtschaftsingenieurwesen Online']
-    }
-
     import MyKlaus2.models
+    import json
+    import ntpath
+
     Base.metadata.create_all(engine)
 
-    from MyKlaus2.models import Department, CourseOfStudy
-
-    for department in data:
+    data = {}
+    with open('data.txt') as json_file:  
+        data = json.load(json_file)
+    
+    from MyKlaus2.models import Department, CourseOfStudy, Professor, Course, Exam, ExamType
+    for department in data['DepAndCoS']:
         dep = Department(name=department)
         db_session.add(dep)
         db_session.commit()
-        for courseofstudy in data[department]:
+        for courseofstudy in data['DepAndCoS'][department]:
             cos = CourseOfStudy(courseofstudy, dep)
             db_session.add(cos)
-    
-    db_session.commit()
-    #db_session.add_all([
-    #    Department(name='Angewandte Naturwissenschaften'),
-    #    Department(name='Bauwesen'),
-    #    Department(name='Elektortechnik & Informatik'),
-    #    Department(name='Maschinenbau & Wirtschaft')
-    #])
-    #db_session.commit()
+        db_session.commit()
+
+    for professor in data['Prof']:
+        prof = Professor(professor['lastname'], professor['firstname'])
+        db_session.add(prof)
+        db_session.commit()
+
+    for course in data['Courses']:
+        cour = Course(course)
+        db_session.add(cour)
+        db_session.commit()
+
+    UnkProfs = {}
+
+    for examtype in data['ExamAndTypes']:
+        exTy = ExamType(examtype)
+        db_session.add(exTy)
+        db_session.commit()
+        for exam in data['ExamAndTypes'][examtype]:
+            filename = ntpath.basename(exam['filePath'])
+            ex = Exam(exam['semester'], exam['year'], filename, exam['filePath'], exTy, db_session.query(Course).filter(Course.name == exam['Course']).first(), True)
+            prof = db_session.query(Professor).filter(Professor.lastName == exam['docent']).first()
+            if prof:
+                prof.courses.append(ex.course)
+            else:
+                if ex.course.name not in UnkProfs:
+                    UnkProfs[ex.course.name] = []
+                if exam['docent'] not in UnkProfs[ex.course.name]:
+                    UnkProfs[ex.course.name].append(exam['docent'])
+            db_session.add(ex)
+        db_session.commit()
+
+    with open('UnkCourseProfs.txt', 'w+', encoding='UTF-8') as json_file:
+        json.dump(UnkProfs, json_file)
 
     print('Initialized the database.')

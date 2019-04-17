@@ -4,7 +4,7 @@ MyKlaus
 ## Nutzungsvorbereitung
 
 ### Module Installieren
-Zur Nutzung dieses Projektes müssen als erstes die benötigen Python Module installiert werden. Um dies zu tun kann entweder die Eingabeaufforderung (cmd) genutzt werden oder es wird direkt in Visual Studio gemacht.
+Zur Nutzung dieses Projektes mÃ¼ssen als erstes die benÃ¶tigen Python Module installiert werden. Um dies zu tun kann entweder die Eingabeaufforderung (cmd) genutzt werden oder es wird direkt in Visual Studio gemacht.
 
 #### Die Installation mit Hilfe der Eingabeaufforderung:
 1. Cmd Starten
@@ -15,10 +15,14 @@ pip install -r requirements.txt
 ```
 
 #### Installation mit Hilfe von Visual Studio
-1. Projektmappe in Visual Studio öffnen
+1. Projektmappe in Visual Studio Ã¶ffnen
+
 2. Rechtsklick auf die aktive Python-Umgebung
+
 ![Siehe Bild](https://i.ibb.co/4sQBhCn/1.png)
+
 3. Im Dropdown "Aus 'requirements.txt' installieren" anklicken
+
 ![Siehe Bild](https://i.ibb.co/qxdrRRd/2.png)
 
 ### Datenbankvorbereitung
@@ -30,7 +34,7 @@ CREATE DATABASE myklaus2 CHARACTER SET UTF8;
 
 Nun muss in der settings.ini im Sektor "Database" die URI und ggf. der Port angepasst werden.
 
-Zum Schluss müssen die Tabellen noch erstellt werden. Dafür öffnen wir die Eingabeaufforderung und navigieren ind das Projektverzeichnis und geben den Befehl ein:
+Zum Schluss mÃ¼ssen die Tabellen noch erstellt werden. DafÃ¼r Ã¶ffnen wir die Eingabeaufforderung und navigieren ind das Projektverzeichnis und geben den Befehl ein:
 ```cmd
 python initdb.py
 ```

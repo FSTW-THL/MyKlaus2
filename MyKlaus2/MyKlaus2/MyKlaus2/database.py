@@ -60,7 +60,7 @@ def init_db():
         db_session.commit()
         for exam in data['ExamAndTypes'][examtype]:
             filename = ntpath.basename(exam['filePath'])
-            ex = Exam(exam['semester'], exam['year'], filename, exam['filePath'], exTy, db_session.query(Course).filter(Course.name == exam['Course']).first(), True)
+            ex = Exam(exam['semester'], exam['year'], filename, exam['filePath'], exTy, db_session.query(Course).filter(Course.name == exam['Course']).first(), db_session.query(Department).filter(Department.idDepartment == exam['department']).first(), True)
             prof = db_session.query(Professor).filter(Professor.lastName == exam['docent']).first()
             if prof:
                 prof.courses.append(ex.course)
@@ -68,7 +68,7 @@ def init_db():
                 if ex.course.name not in UnkProfs:
                     UnkProfs[ex.course.name] = []
                 if exam['docent'] not in UnkProfs[ex.course.name]:
-                    UnkProfs[ex.course.name].append(exam['docent'])
+                    UnkProfs[ex.course.name].append(exam['docent']) 
             db_session.add(ex)
         db_session.commit()
 

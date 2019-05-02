@@ -26,6 +26,7 @@ class Department(Base):
     idDepartment = Column(Integer, primary_key=True)
     name = Column(String(128), unique=True, nullable=False)
     coursesOfStudy = relationship('CourseOfStudy', back_populates='department', lazy=True, order_by='CourseOfStudy.name')
+    exams = relationship('Exam', back_populates='department', lazy=True, order_by='desc(Exam.year)')
 
     def __init__(self, name=None):
         self.name = name
@@ -37,7 +38,8 @@ class Department(Base):
         return {
             'idDepartment': self.idDepartment,
             'name': self.name,
-            'coursesOfStudy': self.coursesOfStudy
+            'coursesOfStudy': self.coursesOfStudy,
+            'exams': self.exams
         }
 
 class CourseOfStudy(Base):
@@ -99,7 +101,7 @@ class Course(Base):
     exams = relationship('Exam', lazy=True)
     coursesOfStudy = relationship("CourseOfStudy", secondary=CourseOfStudy_has_Course, back_populates="courses")
     professors = relationship("Professor", secondary=Course_has_Professor, back_populates="courses")
-
+    
     def __init__(self, name):
         self.name = name
 
@@ -128,18 +130,22 @@ class Exam(Base):
     examType = relationship("ExamType", back_populates='exams', uselist=False)
     Course_idCourse = Column(Integer, ForeignKey('Course.idCourse'), nullable=False)
     course = relationship('Course', back_populates='exams', uselist=False)
+    Department_idDepartment = Column(Integer, ForeignKey('Department.idDepartment'), nullable=False)
+    department = relationship("Department", back_populates='exams', uselist=False)
 
-    def __init__(self, semester, year, filename, filePath, examType, course, isVerified=False):
+
+    def __init__(self, semester, year, filename, filePath, examType, course, department, isVerified=False):
         self.semester = semester
         self.year = year
         self.filename = filename
         self.filePath = filePath
         self.examType = examType
         self.course = course
+        self.department = department
         self.isVerified = isVerified
 
     def __repr__(self):
-        return '<Exam(idExam=%s, semester="%s", year=%d, filename="%s", filePath="%s", examType="%s", isVerified=%d, course="%s")>' % (self.idExam, self.semester, self.year, self.filename, self.examType, self.filePath, self.isVerified, self.course)
+        return '<Exam(idExam=%s, semester="%s", year=%d, filename="%s", filePath="%s", examType="%s", isVerified=%d, course="%s", department="%s")>' % (self.idExam, self.semester, self.year, self.filename, self.filePath, self.examType, self.isVerified, self.course, self.department)
 
     def to_dict(self):
         return {
@@ -149,7 +155,8 @@ class Exam(Base):
             'filename': self.filename,
             'filePath': self.filePath,
             'isVerified': self.isVerified,
-            'course': self.course
+            'course': self.course,
+            'department': self.department
         }
 
 class ExamType(Base):

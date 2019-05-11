@@ -1,39 +1,24 @@
-{% extends "layout_double_sidebar.html" %}
+{% extends "layout_sidebar.html" %}
 
-{% block styles %}
-<style>
-    .svg-img {padding-left:28px;line-height:24px;}
-    .folder-close{background:url("{{ url_for('static', filename='imgs/folder-close.svg') }}") no-repeat left top;}
-    .folder-open{background:url("{{ url_for('static', filename='imgs/folder-open.svg') }}") no-repeat left top;}
-    .paper{background:url("{{ url_for('static', filename='imgs/paper.svg') }}") no-repeat left top;}
-    .written-paper{background: url("{{ url_for('static', filename='imgs/written_paper.svg') }}") no-repeat left top;}
-</style>
-{% endblock styles%}
-
-{% block sidebar_left %}
+{% block sidebar %}
 <ul class="nav flex-column">
-    <li class="nav-item">
-        <a class="nav-link active" href="{{ url_for('main.home') }}">
-            <img src="{{ url_for('static', filename='imgs/paper.svg') }}" />
-            Alle Dokumente anzeigen
-            <span class="sr-only">(current)</span>
-        </a>
-    </li>
-
     <li class="tree">
         <ul class="nav-link">
-            <li>
-                <a class="svg-img written-paper" href="#">Fachbereiche</a>
+            <li class="keepVisible">
+                <a href="{{ url_for('main.list') }}" class="memorylist svg-img paper">Merkliste</a>
+            </li>
+            <li class="keepVisible">
+                <a href="#" class="svg-img written-paper">Fachbereiche</a>
                 {% if departments %}
                 <ul>
                     {% for d in departments %}
-                    <li>
-                        <a class="svg-img folder-close" href="#">{{ d.name }}</a>
-                        {% if d.coursesOfStudy %}
+                    <li class="keepVisible">
+                        <a href="#" class="svg-img folder-close link-filter" data-filter-column="0" data-filter-text="{{ d.name }}">{{ d.name }} ({{ d.count }})</a>
+                        {% if d.courses%}
                         <ul>
-                            {% for cos in d.coursesOfStudy %}
+                            {% for c in d.courses %}
                             <li>
-                                <a class="svg-img folder-close" href="#">{{ cos.name }}</a>
+                                <a href="#" class="svg-img folder-close link-filter" data-filter-column="1" data-filter-text="{{ c.name }}">{{ c.name }} ({{ c.count }})</a>
                             </li>
                             {% endfor %}
                         </ul>
@@ -45,108 +30,218 @@
             </li>
         </ul>
     </li>
-    <!--<li class="nav-item">
-        <a class="nav-link" href="{{ url_for('main.home') }}">
-            <img src="{{ url_for('static', filename='imgs/written_paper.svg') }}" />
-            F&auml;cher
-        </a>
-    </li>-->
 </ul>
-{% endblock sidebar_left %}
+{% endblock sidebar %}
 
 {% block main %}
-<h2 class="page-header">{{ showing }}</h2>
-<form action="" method="GET">
-    <div class="form-row">
-        <div class="input-group">
-            <input type="text" class="form-control" placeholder="Suche..." name="s" value="{{ s }}">
-            <select class="custom-select col-1" name="f">
-                <option value="0" {% if f == 0 %} selected{% endif %}>Fach</option>
-                <option value="1" {% if f == 1 %} selected{% endif %}>Dozent</option>
-                <option value="2" {% if f == 2 %} selected{% endif %}>Semester</option>
-            </select>
-            <div class="input-group-append">
-                <input type="submit" class="btn btn-outline-secondary" value="Suchen">
-            </div>
-        </div>
-    </div>
-</form>
 <div class="table-responsive">
-    {% if documents %}
-    <table class="table table-sm table-striped">
+    <div id="pager" class="pager">
+        <form class="form-inline justify-content-center">
+            <input type="button" value="&lt;&lt;" class="first btn btn-secondary mr-1" />
+            <input type="button" value="&lt;" class="prev btn btn-secondary mr-2" />
+            <input type="text" class="pagedisplay form-control mr-2" />
+            <input type="button" value="&gt;" class="next btn btn-secondary mr-1" />
+            <input type="button" value="&gt;&gt;" class="last btn btn-secondary mr-2" />
+            <select class="pagesize form-control">
+                <option value="10">10</option>
+                <option selected="selected" value="25">25</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+            </select>
+        </form>
+    </div>
+    <table class="tablesorter" id="documentTable">
         <thead>
             <tr>
                 <th scope="col">Fachbereich</th>
-                <th scope="col">Fach</th>
+                <th scope="col" selected>Fach</th>
                 <th scope="col">Typ</th>
                 <th scope="col">Dozent</th>
                 <th scope="col">Semester</th>
             </tr>
         </thead>
-        <tbody>
-
-            {% for doc in documents.items %}
-            <tr id="doc_{{ doc.id }}" class="documentRow">
-                <td scope="row">{{ doc.course.faculty.name }}</td>
-                <td>{{ doc.course.name }}</td>
-                <td>{{ doc.type }}</td>
-                <td>{{ doc.docent }}</td>
-                <td>{{ doc.semester }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
+        <tbody></tbody>
     </table>
-    <nav>
-        <ul class="pagination pagination-sm justify-content-center">
-            <li class="page-item{% if documents.page == 1 %} disabled{% endif %}">
-                <a class="page-link" href="{{ url_for('main.home', p=(documents.page - 1), s=s, f=f) }}">
-                    <span aria-hidden="true">&laquo;</span>
-                    <span class="sr-only">Previous</span>
-                </a>
-            </li>
-            {% for page_num in documents.iter_pages(left_edge=2, right_edge=2, left_current=2, right_current=3) %}
-            {% if page_num %}
-            <li class="page-item{% if documents.page == page_num %} active{% endif %}"><a class="page-link" href="{{ url_for('main.home', p=page_num, s=s, f=f) }}">{{ page_num }}</a></li>
-            {% else %}
-            <li class="page-item">
-                <a class="page-link">...</a>
-            </li>
-            {% endif %}
-            {% endfor %}
-            <li class="page-item{% if documents.page == documents.pages %} disabled{% endif %}">
-                <a class="page-link" href="{{ url_for('main.home', p=(documents.page + 1), s=s, f=f) }}">
-                    <span aria-hidden="true">&raquo;</span>
-                    <span class="sr-only">Next</span>
-                </a>
-            </li>
-        </ul>
-    </nav>
-    {% else %}
-    <h4>Derzeit liegen keine Dokumente vor.</h4>
-    {% endif %}
+    <div id="pager" class="pager">
+        <form class="form-inline justify-content-center mb-3">
+            <input type="button" value="&lt;&lt;" class="first btn btn-secondary mr-1" />
+            <input type="button" value="&lt;" class="prev btn btn-secondary mr-2" />
+            <input type="text" class="pagedisplay form-control mr-2" />
+            <input type="button" value="&gt;" class="next btn btn-secondary mr-1" />
+            <input type="button" value="&gt;&gt;" class="last btn btn-secondary mr-2" />
+            <select class="pagesize form-control">
+                <option value="10">10</option>
+                <option selected="selected" value="25">25</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+            </select>
+        </form>
+    </div>
 </div>
-<div class="page">
-    <embed class="d-inline-block" src="{{ url_for('static', filename='documents/TestPDF.pdf') }}"
-            type="application/pdf" internalinstanceid="5"
-            style="width:100%;height:750px" />
+<div class="page pt-3 mb-3 border-top" style="display: none;">
+    <div class="docoptions mb-3">
+        <form class="form-inline justify-content-center">
+            <input type="button" value="Herunterladen" class="download btn btn-secondary mr-1" style="width: 130px" />
+            <input type="button" value="Senden (Mail)" class="sendMail btn btn-secondary mr-1" style="width: 130px" />
+            <input type="button" value="Merken" class="addList btn btn-secondary mr-1" style="width: 130px" />
+            <input type="button" value="Vergessen" class="removeList btn btn-secondary mr-1" style="width: 130px" />
+        </form>
+    </div>
+    <embed class="d-inline-block pdf-viewer" src="" type="application/pdf" style="width:100%;height:0px" />
 </div>
 {% endblock main %}
 
-{% block sidebar_right %}
-{% endblock sidebar_right %}
-
 {% block scripts %}
+<script src="{{ url_for('static', filename='js/jquery.tablesorter.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/jquery.tablesorter.pager.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/jquery.tablesorter.widgets.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/jquery.cookie.min.js') }}"></script>
 <script>
+    jQuery.fn.extend({
+        scrollToMe: function () {
+            var x = jQuery(this).offset().top - 100;
+            jQuery('html,body').animate({ scrollTop: x }, 500);
+        }
+    });
+
     $(function () {
-        $('.tree li').hide();
-        $('.tree li:first').show();
+        var currentDocID = -1;
+        var docList = [];
+        var url = "/";
+
+        $.cookie.json = true;
+        
+        if (localStorage.getItem('pdf-viewer-doclist') != null)
+            docList = JSON.parse(localStorage.getItem('pdf-viewer-doclist'));
+        
+        setMemorylistNumber();
+
+        function onList(id) {
+            return docList.includes(id);
+        }
+
+        function setMemorylistNumber() {
+            $('.memorylist')[0].innerText = "Merkliste (" + docList.length + ")";
+        }
+
+        $('.download').click(function () {
+            window.open(url, '_blank');
+        });
+        $('.sendMail').click(function () { });
+        $('.addList').click(function () {
+            docList.push(currentDocID);
+            localStorage.setItem('pdf-viewer-doclist', JSON.stringify(docList));
+            $('.addList').hide();
+            $('.removeList').show();
+            setMemorylistNumber();
+
+            $.notify({
+                message: 'Dokument wurde der Liste hinzugef&uuml;gt.',
+            }, NotificationSetting);
+        });
+        $('.removeList').click(function () {
+            docList.splice(docList.indexOf(currentDocID), 1);
+            localStorage.setItem('pdf-viewer-doclist', JSON.stringify(docList));
+            $('.removeList').hide();
+            $('.addList').show();
+            setMemorylistNumber();
+
+            $.notify({
+                message: 'Dokument wurde von der Liste entfernt.',
+            }, NotificationSetting);
+        });
+
+        var $table = $("#documentTable")
+            .on('click', 'tbody tr', function () {
+                currentDocID = $(this).children().first().attr('id');
+                $(this).parent().find("tr.selected").removeClass("selected");
+                $(this).addClass("selected");
+                if (onList(currentDocID)) {
+                    $('.removeList').show();
+                    $('.addList').hide();
+                } else {
+                    $('.removeList').hide();
+                    $('.addList').show();
+                }
+                url = "{{ url_for('api.getDoc') }}?docID=" + currentDocID;
+                $('.page.border-top').show()
+                $('.pdf-viewer').attr('src', url).attr('style', 'width:100%;height:' + ($(window).height() - 140) + 'px');
+                $('.pdf-viewer').scrollToMe();
+            })
+            .tablesorter({
+                resort: true,
+                sortReset: true,
+
+                widgets: ['filter'],
+                widgetOptions: {
+                    filter_external: '.search',
+                    filter_liveFilters: true,
+                    filter_columnFilters: true,
+                    filter_saveFilters: true,
+                    filter_placeholder: { search: 'Search...' },
+                    filter_defaultFilter: { 1: '~{query}' },
+                    filter_reset: '.resetSearch'
+                }
+            })
+            .tablesorterPager({
+                container: $(".pager"),
+                ajaxUrl: '{{ url_for("api.getExam") }}?page={page+1}&per_page={size}&{sortList:sort}&{filterList:filter}',
+                ajaxProcessing: function (ajax, table) {
+                    if (ajax && ajax.hasOwnProperty('rows')) {
+                        var count = ajax.total_rows;
+                        var rows = ajax.rows;
+                        $(table).find('tbody').empty();
+                        $.each(rows, function (i, item) {
+                            var html = "<td id='" + item.ID + "'>" + item.Fachbereich + "</td>" +
+                                "<td>" + item.Fach + "</td>" +
+                                "<td>" + item.Typ + "</td>" +
+                                "<td>" + item.Dozent + "</td>" +
+                                "<td>" + item.Semester + "</td>";
+                            $("<tr/>").html(html).appendTo(table);
+                        });
+                        return [count];
+                    }
+                },
+                processAjaxOnInit: true,
+                output: '{startRow} - {endRow} / ({totalRows})',
+                updateArrows: true,
+                page: 1,
+                size: 25,
+                pageReset: 0,
+                removeRows: true,
+
+                cssNext: '.next',
+                cssPrev: '.prev',
+                cssFirst: '.first',
+                cssLast: '.last',
+                cssGoto: '.gotoPage',
+
+                cssPageDisplay: '.pagedisplay',
+                cssPageSize: '.pagesize',
+
+                cssDisabled: 'disabled',
+                cssErrorRow: 'tablesorter-errorRow'
+            });
+
+        $.tablesorter.filter.bindSearch($table, $('.search'));
+
+        $('.link-filter').click(function () {
+            var col = $(this).data('filter-column'),
+                val = $(this).data('filter-text');
+
+            $('.tablesorter-filter[data-column="' + col + '"]').first().val(val).trigger('search', false);
+        });
+
+        $('.tree li:not(.keepVisible)').hide();
         $('.tree li').on('click', function (e) {
-            var children = $(this).find('> ul > li');
+            var children = $(this).find('> ul > li:not(.keepVisible)');
             if (children.is(":visible")) children.hide('fast');
             else children.show('fast');
             var a = $(this).find('> a');
-            if (a.attr("class") == "svg-img folder-close") a.attr("class", "svg-img folder-open");
-            else if (a.attr("class") == "svg-img folder-open") a.attr("class", "svg-img folder-close");
+            a.parent().parent().find('> li > a.folder-open').each(function (n, e) {
+                $(e).removeClass("folder-open").addClass("folder-close");
+            });
+            $(a).removeClass("folder-close").addClass("folder-open");
             e.stopPropagation();
         });
     });

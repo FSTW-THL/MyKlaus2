@@ -1,0 +1,169 @@
+{% extends "layout_sidebar.html" %}
+
+{% block main %}
+<div class="page mb-3">
+    <div class="pb-3 mb-3 border-bottom">
+        <form class="form-inline justify-content-center">
+            <input type="button" value="Liste Herunterladen" class="download btn btn-secondary mr-1" style="width: 170px" />
+            <input type="button" value="Liste Senden (Mail)" class="sendMail btn btn-secondary mr-1" style="width: 170px" />
+        </form>
+    </div>
+    <div class="table-responsive">
+        <div id="pager" class="pager">
+            <form class="form-inline justify-content-center">
+                <input type="button" value="&lt;&lt;" class="first btn btn-secondary mr-1" />
+                <input type="button" value="&lt;" class="prev btn btn-secondary mr-2" />
+                <input type="text" class="pagedisplay form-control mr-2" />
+                <input type="button" value="&gt;" class="next btn btn-secondary mr-1" />
+                <input type="button" value="&gt;&gt;" class="last btn btn-secondary mr-2" />
+                <select class="pagesize form-control">
+                    <option value="10">10</option>
+                    <option selected="selected" value="25">25</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                </select>
+            </form>
+        </div>
+        <table class="tablesorter" id="memoryList">
+            <thead>
+                <tr>
+                    <th scope="col">Fachbereich</th>
+                    <th scope="col" selected>Fach</th>
+                    <th scope="col">Typ</th>
+                    <th scope="col">Dozent</th>
+                    <th scope="col">Semester</th>
+                    <td scope="col" data-sorter="false" data-filter="false">Aktionen</td>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        <div id="pager" class="pager">
+            <form class="form-inline justify-content-center mb-3">
+                <input type="button" value="&lt;&lt;" class="first btn btn-secondary mr-1" />
+                <input type="button" value="&lt;" class="prev btn btn-secondary mr-2" />
+                <input type="text" class="pagedisplay form-control mr-2" />
+                <input type="button" value="&gt;" class="next btn btn-secondary mr-1" />
+                <input type="button" value="&gt;&gt;" class="last btn btn-secondary mr-2" />
+                <select class="pagesize form-control">
+                    <option value="10">10</option>
+                    <option selected="selected" value="25">25</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                </select>
+            </form>
+        </div>
+    </div>
+</div>
+<embed class="d-inline-block pdf-viewer" src="" type="application/pdf" style="width:100%;height:0px" />
+{% endblock main %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/jquery.tablesorter.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/jquery.tablesorter.pager.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/jquery.tablesorter.widgets.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/jquery.cookie.min.js') }}"></script>
+<script>
+    jQuery.fn.extend({
+        scrollToMe: function () {
+            var x = jQuery(this).offset().top - 100;
+            jQuery('html,body').animate({ scrollTop: x }, 500);
+        }
+    });
+
+    $(function () {
+        var currentDocID = -1;
+        var docList = [];
+
+        $.cookie.json = true;
+
+        if (localStorage.getItem('pdf-viewer-doclist') != null)
+            docList = JSON.parse(localStorage.getItem('pdf-viewer-doclist'));
+
+        setMemorylistNumber();
+
+        function onList(id) {
+            return docList.includes(id);
+        }
+
+        function setMemorylistNumber() {
+            $('.memorylist')[0].innerText = "Merkliste (" + docList.length + ")";
+        }
+
+        var $table = $("#memoryList")
+            .on('click', 'tbody tr', function () {
+                currentDocID = $(this).children().first().attr('id');
+                $(this).parent().find("tr.selected").removeClass("selected");
+                $(this).addClass("selected");
+                if (onList(currentDocID)) {
+                    $('.removeList').show();
+                    $('.addList').hide();
+                } else {
+                    $('.removeList').hide();
+                    $('.addList').show();
+                }
+                url = "{{ url_for('api.getDoc') }}?docID=" + currentDocID;
+                $('.page.border-top').show()
+                $('.pdf-viewer').attr('src', url).attr('style', 'width:100%;height:' + ($(window).height() - 140) + 'px');
+                $('.pdf-viewer').scrollToMe();
+            })
+            .tablesorter({
+                resort: true,
+                sortReset: true,
+
+                widgets: ['filter'],
+                widgetOptions: {
+                    filter_external: '.search',
+                    filter_liveFilters: true,
+                    filter_columnFilters: true,
+                    filter_saveFilters: true,
+                    filter_placeholder: { search: 'Search...' },
+                    filter_defaultFilter: { 1: '~{query}' },
+                    filter_reset: '.resetSearch'
+                }
+            })
+            .tablesorterPager({
+                container: $(".pager"),
+                ajaxUrl: '{{ url_for("api.getList") }}?page={page+1}&per_page={size}&ids=[' + docList + ']&{sortList:sort}&{filterList:filter}',
+                ajaxProcessing: function (ajax, table) {
+                    if (ajax && ajax.hasOwnProperty('rows')) {
+                        var count = ajax.total_rows;
+                        var rows = ajax.rows;
+                        $(table).find('tbody').empty();
+                        $.each(rows, function (i, item) {
+                            var html = "<td id='" + item.ID + "'>" + item.Fachbereich + "</td>" +
+                                "<td>" + item.Fach + "</td>" +
+                                "<td>" + item.Typ + "</td>" +
+                                "<td>" + item.Dozent + "</td>" +
+                                "<td>" + item.Semester + "</td>" +
+                                "<td>Aktionen</td>";
+                            $("<tr/>").html(html).appendTo(table);
+                        });
+                        return [count];
+                    }
+                },
+                processAjaxOnInit: true,
+                output: '{startRow} - {endRow} / ({totalRows})',
+                updateArrows: true,
+                page: 1,
+                size: 25,
+                pageReset: 0,
+                removeRows: true,
+
+                cssNext: '.next',
+                cssPrev: '.prev',
+                cssFirst: '.first',
+                cssLast: '.last',
+                cssGoto: '.gotoPage',
+
+                cssPageDisplay: '.pagedisplay',
+                cssPageSize: '.pagesize',
+
+                cssDisabled: 'disabled',
+                cssErrorRow: 'tablesorter-errorRow'
+            });
+
+        $.tablesorter.filter.bindSearch($table, $('.search'));
+
+    });
+</script>
+{% endblock scripts %}

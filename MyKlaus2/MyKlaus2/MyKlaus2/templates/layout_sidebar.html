@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block styles %}
+<link href="{{ url_for('static', filename='css/theme.default.css') }}" rel="stylesheet">
+<style>
+    .svg-img {padding-left:28px;line-height:24px;}
+    .folder-close{background:url("{{ url_for('static', filename='imgs/folder-close.svg') }}") no-repeat left top;}
+    .folder-open{background:url("{{ url_for('static', filename='imgs/folder-open.svg') }}") no-repeat left top;}
+    .paper{background:url("{{ url_for('static', filename='imgs/paper.svg') }}") no-repeat left top;}
+    .written-paper{background: url("{{ url_for('static', filename='imgs/written_paper.svg') }}") no-repeat left top;}
+    tr.selected td{background-color: #a0a6ab;}
+</style>
+{% endblock styles%}
+
+{% block main_row %}
+<nav class="col-md-2 d-none d-md-block bg-light sidebar left">
+    <div class="sidebar-sticky">
+        {% block sidebar %}
+        <ul class="nav flex-column">
+            <li class="tree">
+                <ul class="nav-link">
+                    <li class="keepVisible">
+                        <a href="{{ url_for('main.list') }}" class="memorylist svg-img paper">Merkliste</a>
+                    </li>
+                    <li class="keepVisible">
+                        <a href="{{ url_for('main.home') }}" class="svg-img written-paper">Fachbereiche</a>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+        {% endblock sidebar %}
+    </div>
+</nav>
+<main role="main" class="col-md-9 ml-sm-auto col-lg-10 pt-3 px-4">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }}">
+        {{ message }}
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+    <h2 class="page-header pb-2 mb-3 border-bottom">{{ showing }}</h2>
+    {% block main %}{% endblock main %}
+</main>
+{% endblock main_row %}

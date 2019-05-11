@@ -7,7 +7,7 @@ engine = create_engine(
     connect_args = {
         'port': int(app.config['SQLALCHEMY_DATABASE_PORT'])
     },
-    echo='debug',
+    echo=False,
     echo_pool=True
 )
 
@@ -25,54 +25,65 @@ def init_db():
     import MyKlaus2.models
     import json
     import ntpath
+    from sqlalchemy import or_
 
     Base.metadata.create_all(engine)
 
     data = {}
     with open('data.txt') as json_file:  
         data = json.load(json_file)
-    
-    from MyKlaus2.models import Department, CourseOfStudy, Professor, Course, Exam, ExamType
-    for department in data['DepAndCoS']:
-        dep = Department(name=department)
-        db_session.add(dep)
-        db_session.commit()
-        for courseofstudy in data['DepAndCoS'][department]:
-            cos = CourseOfStudy(courseofstudy, dep)
-            db_session.add(cos)
+
+    from MyKlaus2.models import Department, Professor, Course, Exam, ExamType
+    for department in data['Dep']:
+        db_session.add(Department(name=data['Dep'][department]))
         db_session.commit()
 
+    UnkProf = Professor("Unbekannt");
+    db_session.add(UnkProf)
+    db_session.commit()
     for professor in data['Prof']:
-        prof = Professor(professor['lastname'], professor['firstname'])
-        db_session.add(prof)
+        db_session.add(Professor(professor['lastname'], professor['firstname']))
         db_session.commit()
 
-    for course in data['Courses']:
-        cour = Course(course)
-        db_session.add(cour)
+    for idCourse in data['Courses']:
+        db_session.add(Course(data['Courses'][idCourse]['name'], db_session.query(Department).filter(Department.name == data['Courses'][idCourse]['dep']).first()))
         db_session.commit()
-
-    UnkProfs = {}
 
     for examtype in data['ExamAndTypes']:
         exTy = ExamType(examtype)
         db_session.add(exTy)
         db_session.commit()
         for exam in data['ExamAndTypes'][examtype]:
-            filename = ntpath.basename(exam['filePath'])
-            ex = Exam(exam['semester'], exam['year'], filename, exam['filePath'], exTy, db_session.query(Course).filter(Course.name == exam['Course']).first(), db_session.query(Department).filter(Department.idDepartment == exam['department']).first(), True)
-            prof = db_session.query(Professor).filter(Professor.lastName == exam['docent']).first()
-            if prof:
-                prof.courses.append(ex.course)
-            else:
-                if ex.course.name not in UnkProfs:
-                    UnkProfs[ex.course.name] = []
-                if exam['docent'] not in UnkProfs[ex.course.name]:
-                    UnkProfs[ex.course.name].append(exam['docent']) 
-            db_session.add(ex)
-        db_session.commit()
 
-    with open('UnkCourseProfs.txt', 'w+', encoding='UTF-8') as json_file:
-        json.dump(UnkProfs, json_file)
+            sem = exam['semester']
+            year = exam['year']
+            fname = ntpath.basename(exam['filePath'])
+            fpath = exam['filePath']
+            cour = db_session.query(Course).filter(Course.name == exam['Course']).first()
+            dep = db_session.query(Department).filter(Department.name == exam['department']).first()
+            docent = exam['docent']
+            prof = db_session.query(Professor).filter(or_(Professor.firstName == docent, Professor.lastName == docent)).first()
+            
+            if not prof:
+                docent.split(" ")
+                for x in docent:
+                    prof = db_session.query(Professor).filter(or_(Professor.firstName == x, Professor.lastName == x)).first()
+            
+            if not prof:
+                docent.split("/")
+                for x in docent:
+                    prof = db_session.query(Professor).filter(or_(Professor.firstName == x, Professor.lastName == x)).first()
+            
+            if not prof:
+                docent.split("\\")
+                for x in docent:
+                    prof = db_session.query(Professor).filter(or_(Professor.firstName == x, Professor.lastName == x)).first()
+            
+            if not prof:
+                prof = UnkProf
+            
+            ex = Exam(sem, year, fname, fpath, cour, dep, exTy, prof, True)
+            db_session.add(ex)
+            db_session.commit()
 
     print('Initialized the database.')

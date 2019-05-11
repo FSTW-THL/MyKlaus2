@@ -2,22 +2,12 @@ from sqlalchemy import Table, Column, Integer, String, Boolean, Enum, ForeignKey
 from sqlalchemy.orm import relationship
 from MyKlaus2.database import Base
 import enum
+import json
 
 #Enums
 class SemesterEnum(enum.Enum):
     SS = 'SS'
     WS = 'WS'
-
-#Assoziations Tabellen
-CourseOfStudy_has_Course = Table('CourseOfStudy_has_Course', Base.metadata,
-    Column('CourseOfStudy_idCourseOfStudy', Integer, ForeignKey('CourseOfStudy.idCourseOfStudy'), nullable=False),
-    Column('Course_idCourse', Integer, ForeignKey('Course.idCourse'), nullable=False)
-)
-
-Course_has_Professor = Table('Course_has_Professor', Base.metadata,
-    Column('Course_idCourse', Integer, ForeignKey('Course.idCourse'), nullable=False),
-    Column('Professor_idProfessor', Integer, ForeignKey('Professor.idProfessor'), nullable=False)
-)
 
 #Tabellen
 class Department(Base):
@@ -25,8 +15,8 @@ class Department(Base):
 
     idDepartment = Column(Integer, primary_key=True)
     name = Column(String(128), unique=True, nullable=False)
-    coursesOfStudy = relationship('CourseOfStudy', back_populates='department', lazy=True, order_by='CourseOfStudy.name')
     exams = relationship('Exam', back_populates='department', lazy=True, order_by='desc(Exam.year)')
+    courses = relationship('Course', back_populates='department', lazy=False, order_by='Course.name')
 
     def __init__(self, name=None):
         self.name = name
@@ -34,36 +24,20 @@ class Department(Base):
     def __repr__(self):
         return '<Department(idDepartment=%d, name="%s">' % (self.idDepartment, self.name)
 
+    def to_json(self):
+        return json.dumps(self.to_serializable_dict())
+
+    def to_serializable_dict(self):
+        return {
+            'idDepartment': self.idDepartment,
+            'name': self.name
+        }
+
     def to_dict(self):
         return {
             'idDepartment': self.idDepartment,
             'name': self.name,
-            'coursesOfStudy': self.coursesOfStudy,
-            'exams': self.exams
-        }
-
-class CourseOfStudy(Base):
-    __tablename__ = 'CourseOfStudy'
-
-    idCourseOfStudy = Column(Integer, primary_key=True)
-    name = Column(String(255), unique=True, nullable=False)
-    Department_idDepartment = Column(Integer, ForeignKey('Department.idDepartment'), nullable=False)
-    department = relationship("Department", back_populates='coursesOfStudy', uselist=False)
-
-    courses = relationship("Course", secondary=CourseOfStudy_has_Course, back_populates="coursesOfStudy")
-
-    def __init__(self, name, department):
-        self.name = name
-        self.Department_idDepartment = department.idDepartment
-
-    def __repr__(self):
-        return '<CourseOfStudy(idCourseOfStudy=%d, name="%s", department=%s)>' % (self.idCouseOfStudy, self.name, self.depadepartment)
-
-    def to_dict(self):
-        return {
-            'idCourseOfStudy': self.idCourseOfStudy,
-            'name': self.name,
-            'department': self.department,
+            'exams': self.exams,
             'courses': self.courses
         }
 
@@ -73,8 +47,8 @@ class Professor(Base):
     idProfessor = Column(Integer, primary_key=True)
     firstName = Column(String(128))
     lastName = Column(String(128), nullable=False)
-    isAgainstMyKlaus = Column(Boolean, nullable=False, default=True)
-    courses = relationship("Course", secondary=Course_has_Professor, back_populates="professors")
+    isAgainstMyKlaus = Column(Boolean, nullable=False, default=False)
+    exams = relationship('Exam', back_populates='professor', lazy=True, order_by='desc(Exam.year)')
 
     def __init__(self, lastName, firstName=None, isAgainstMyKlaus=True):
         self.firstName = firstName
@@ -84,13 +58,24 @@ class Professor(Base):
     def __repr__(self):
         return '<Professor(idProfessor=%d, firstName="%s", lastName="%s", isAgainstMyKlaus=%d)>' % (self.idProfessor, self.firstName, self.lastName, self.isAgainstMyKlaus)
 
+    def to_json(self):
+        return json.dumps(self.to_serializable_dict())
+
+    def to_serializable_dict(self):
+        return {
+            'idProfessor': self.idProfessor,
+            'firstName': self.firstName,
+            'lastName': self.lastName,
+            'isAgainstMyKlaus': self.isAgainstMyKlaus
+        }
+
     def to_dict(self):
         return {
             'idProfessor': self.idProfessor,
             'firstName': self.firstName,
             'lastName': self.lastName,
             'isAgainstMyKlaus': self.isAgainstMyKlaus,
-            'courses': self.courses
+            'exams': self.exams
         }
 
 class Course(Base):
@@ -98,23 +83,60 @@ class Course(Base):
 
     idCourse = Column(Integer, primary_key=True)
     name = Column(String(255), nullable=False)
-    exams = relationship('Exam', lazy=True)
-    coursesOfStudy = relationship("CourseOfStudy", secondary=CourseOfStudy_has_Course, back_populates="courses")
-    professors = relationship("Professor", secondary=Course_has_Professor, back_populates="courses")
-    
-    def __init__(self, name):
+    exams = relationship('Exam', back_populates='course', lazy=True, order_by='desc(Exam.year)')
+    Department_idDepartment = Column(Integer, ForeignKey('Department.idDepartment'), nullable=False)
+    department = relationship("Department", back_populates='courses', uselist=False)
+
+    def __init__(self, name, department):
         self.name = name
+        self.department = department
 
     def __repr__(self):
         return '<Course(idCourse=%s, name="%s")>' % (self.idCourse, self.name)
+
+    def to_json(self):
+        return json.dumps(self.to_serializable_dict())
+
+    def to_serializable_dict(self):
+        return {
+            'idCourse': self.idCourse,
+            'name': self.name
+        }
 
     def to_dict(self):
         return {
             'idCourse': self.idCourse,
             'name': self.name,
-            'exams': self.exams,
-            'coursesOfStudy': self.coursesOfStudy,
-            'professors': self.professors
+            'exams': self.exams
+        }
+
+class ExamType(Base):
+    __tablename__ = 'ExamType'
+
+    idExamType = Column(Integer, primary_key=True)
+    name = Column(String(128), unique=True, nullable=False)
+    exams = relationship('Exam', back_populates='examType', lazy=True, order_by='desc(Exam.year)')
+
+    def __init__(self, name):
+        self.name = name
+
+    def __repr__(self):
+        return '<ExamType(idExamType=%d, name="%s")>' % (self.idExamType, self.name)
+
+    def to_json(self):
+        return json.dumps(self.to_serializable_dict())
+
+    def to_serializable_dict(self):
+        return {
+            'idExamType': self.idExamType,
+            'name': self.name
+        }
+
+    def to_dict(self):
+        return {
+            'idExamType': self.idExamType,
+            'name': self.name,
+            'exams': self.exams
         }
 
 class Exam(Base):
@@ -126,15 +148,17 @@ class Exam(Base):
     filename = Column(String(255), nullable=False)
     filePath = Column(String(4096), nullable=False)
     isVerified = Column(Boolean, nullable=False, default=False)
-    ExamType_idExamType = Column(Integer, ForeignKey('ExamType.idExamType'), nullable=False)
-    examType = relationship("ExamType", back_populates='exams', uselist=False)
     Course_idCourse = Column(Integer, ForeignKey('Course.idCourse'), nullable=False)
-    course = relationship('Course', back_populates='exams', uselist=False)
+    course = relationship("Course", back_populates='exams', uselist=False)
     Department_idDepartment = Column(Integer, ForeignKey('Department.idDepartment'), nullable=False)
     department = relationship("Department", back_populates='exams', uselist=False)
+    ExamType_idExamType = Column(Integer, ForeignKey('ExamType.idExamType'), nullable=False)
+    examType = relationship("ExamType", back_populates='exams', uselist=False)
+    Professor_idProfessor = Column(Integer, ForeignKey('Professor.idProfessor'), nullable=False)
+    professor = relationship("Professor", back_populates='exams', uselist=False)
 
 
-    def __init__(self, semester, year, filename, filePath, examType, course, department, isVerified=False):
+    def __init__(self, semester, year, filename, filePath, course, department, examType, professor, isVerified=False):
         self.semester = semester
         self.year = year
         self.filename = filename
@@ -142,39 +166,40 @@ class Exam(Base):
         self.examType = examType
         self.course = course
         self.department = department
+        self.professor = professor
         self.isVerified = isVerified
 
     def __repr__(self):
         return '<Exam(idExam=%s, semester="%s", year=%d, filename="%s", filePath="%s", examType="%s", isVerified=%d, course="%s", department="%s")>' % (self.idExam, self.semester, self.year, self.filename, self.filePath, self.examType, self.isVerified, self.course, self.department)
 
-    def to_dict(self):
+    def to_json(self):
+        return json.dumps(self.to_serializable_dict())
+
+    def to_serializable_dict(self):
         return {
-            'idExam': self.id.Exam,
-            'semester': self.semester,
+            'idExam': self.idExam,
+            'semester': self.semester.name,
             'year': self.year,
             'filename': self.filename,
             'filePath': self.filePath,
             'isVerified': self.isVerified,
-            'course': self.course,
-            'department': self.department
+            'course': self.course.to_serializable_dict(),
+            'department': self.department.to_serializable_dict(),
+            'examType': self.examType.to_serializable_dict(),
+            'professor': self.professor.to_serializable_dict()
         }
-
-class ExamType(Base):
-    __tablename__ = 'ExamType'
-
-    idExamType = Column(Integer, primary_key=True)
-    name = Column(String(128), unique=True, nullable=False)
-    exams = relationship('Exam', back_populates='examType', lazy=True)
-
-    def __init__(self, name):
-        self.name = name
-
-    def __repr__(self):
-        return '<ExamType(idExamType=%d, name="%s")>' % (self.idExamType, self.name)
 
     def to_dict(self):
         return {
-            'idExamType': self.idExamType,
-            'name': self.name,
-            'exams': self.exams
+            'idExam': self.idExam,
+            'semester': self.semester.name,
+            'year': self.year,
+            'filename': self.filename,
+            'filePath': self.filePath,
+            'isVerified': self.isVerified,
+            'examType': self.examType,
+            'course': self.course,
+            'department': self.department,
+            'examType': self.examType,
+            'professor': self.professor
         }

@@ -36,7 +36,16 @@
     <Compile Include="MyKlaus2\admin\__init__.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="MyKlaus2\api\routes.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MyKlaus2\api\__init__.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="MyKlaus2\database.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="exceptions.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="MyKlaus2\main\__init__.py">
@@ -59,28 +68,47 @@
     <Folder Include="MyKlaus2\" />
     <Folder Include="MyKlaus2\admin\" />
     <Folder Include="MyKlaus2\main\" />
+    <Folder Include="MyKlaus2\api\" />
     <Folder Include="MyKlaus2\static\" />
     <Folder Include="MyKlaus2\static\css\" />
-    <Folder Include="MyKlaus2\static\documents\" />
+    <Folder Include="MyKlaus2\static\js\" />
     <Folder Include="MyKlaus2\static\imgs\" />
     <Folder Include="MyKlaus2\templates\" />
     <Folder Include="MyKlaus2\templates\admin\" />
+    <Folder Include="MyKlaus2\templates\error\" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="MyKlaus2\static\css\animate.css">
+      <SubType>Code</SubType>
+    </Content>
     <Content Include="MyKlaus2\static\css\dashboard.css" />
+    <Content Include="MyKlaus2\static\css\theme.default.css" />
     <Content Include="MyKlaus2\static\favicon.svg" />
     <Content Include="MyKlaus2\static\imgs\folder-close.svg" />
     <Content Include="MyKlaus2\static\imgs\folder-open.svg" />
     <Content Include="MyKlaus2\static\imgs\written_paper.svg" />
     <Content Include="MyKlaus2\static\imgs\paper.svg" />
-    <Content Include="MyKlaus2\static\settings.ini">
+    <Content Include="MyKlaus2\static\js\bootstrap-notify.js" />
+    <Content Include="MyKlaus2\static\js\bootstrap-notify.min.js" />
+    <Content Include="MyKlaus2\static\js\jquery.cookie.js" />
+    <Content Include="MyKlaus2\static\js\jquery.cookie.min.js">
       <SubType>Code</SubType>
     </Content>
-    <Content Include="MyKlaus2\static\documents\TestPDF.pdf" />
+    <Content Include="MyKlaus2\static\js\jquery.tablesorter.js" />
+    <Content Include="MyKlaus2\static\js\jquery.tablesorter.min.js" />
+    <Content Include="MyKlaus2\static\js\jquery.tablesorter.pager.js" />
+    <Content Include="MyKlaus2\static\js\jquery.tablesorter.pager.min.js" />
+    <Content Include="MyKlaus2\static\js\jquery.tablesorter.widgets.js" />
+    <Content Include="MyKlaus2\static\js\jquery.tablesorter.widgets.min.js" />
+    <Content Include="MyKlaus2\templates\list.html">
+      <SubType>Code</SubType>
+    </Content>
+    <Content Include="settings.ini">
+      <SubType>Code</SubType>
+    </Content>
     <Content Include="MyKlaus2\templates\admin\login.html" />
     <Content Include="MyKlaus2\templates\base.html" />
-    <Content Include="MyKlaus2\templates\layout_double_sidebar.html" />
-    <Content Include="MyKlaus2\templates\layout_single_sidebar.html" />
+    <Content Include="MyKlaus2\templates\layout_sidebar.html" />
     <Content Include="requirements.txt" />
     <Content Include="MyKlaus2\templates\about.html" />
     <Content Include="MyKlaus2\templates\contact.html" />

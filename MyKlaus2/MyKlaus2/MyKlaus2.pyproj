@@ -48,6 +48,9 @@
     <Compile Include="exceptions.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="MyKlaus2\mailModul.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="MyKlaus2\main\__init__.py">
       <SubType>Code</SubType>
     </Compile>
@@ -81,6 +84,7 @@
     <Content Include="MyKlaus2\static\css\animate.css">
       <SubType>Code</SubType>
     </Content>
+    <Content Include="client_secrets.json" />
     <Content Include="MyKlaus2\static\css\dashboard.css" />
     <Content Include="MyKlaus2\static\css\theme.default.css" />
     <Content Include="MyKlaus2\static\favicon.svg" />
@@ -106,6 +110,7 @@
     <Content Include="settings.ini">
       <SubType>Code</SubType>
     </Content>
+    <Content Include="MyKlaus2\static\documents\TestPDF.pdf" />
     <Content Include="MyKlaus2\templates\admin\login.html" />
     <Content Include="MyKlaus2\templates\base.html" />
     <Content Include="MyKlaus2\templates\layout_sidebar.html" />
@@ -114,6 +119,9 @@
     <Content Include="MyKlaus2\templates\contact.html" />
     <Content Include="MyKlaus2\templates\index.html" />
     <Content Include="MyKlaus2\templates\layout.html" />
+    <Content Include="settings.yaml">
+      <SubType>Code</SubType>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <InterpreterReference Include="Global|PythonCore|3.6" />

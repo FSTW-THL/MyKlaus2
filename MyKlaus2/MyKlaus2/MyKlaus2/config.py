@@ -11,7 +11,7 @@ class Config:
     SQLALCHEMY_DATABASE_PORT = config['Database']['PORT']
 
     MAIL_SERVER = config['Mail']['SERVER']
-    MAIL_PORT = config['Mail']['Port']
+    MAIL_PORT = config['Mail']['PORT']
     MAIL_USE_TLS = config['Mail']['SECRET_KEY']
     MAIL_USERNAME = config['Mail']['USER']
     MAIL_PASSWORD = config['Mail']['PASS']

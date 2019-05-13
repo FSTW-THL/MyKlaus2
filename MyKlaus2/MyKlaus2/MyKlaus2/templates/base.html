@@ -49,6 +49,13 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
     <script src="{{ url_for('static', filename='js/bootstrap-notify.min.js') }}"></script>
     <script>
+        jQuery.fn.extend({
+            scrollToMe: function () {
+                var x = jQuery(this).offset().top - 100;
+                jQuery('html,body').animate({ scrollTop: x }, 500);
+            }
+        });
+
         var NotificationSetting = {
             // settings
             newest_on_top: false,
@@ -61,22 +68,15 @@
             animate: {
                 enter: 'animated fadeInUp',
                 exit: 'animated fadeOutRight'
-            },
-            template: '<div data-notify="container" class="col-xs-11 col-sm-3 alert alert-{0}" role="alert">' +
-                    '<button type="button" aria-hidden="true" class="close" data-notify="dismiss">×</button>' +
-                    '<span data-notify="icon"></span> ' +
-                    '<span data-notify="title"><strong>{1}</strong></span> ' +
-                    '<span data-notify="message">{2}</span>' +
-                    '<a href="{3}" target="{4}" data-notify="url"></a>' +
-                '</div>'
+            }
         };
 
-        $.notify({
-            // options
-            title: 'Feedback:',
-            message: 'Da unsere Klausurenverwaltung neu ist würden wir uns über Freedback und Verbesserungsvorschläge freuen.',
-            url: '{{ url_for("main.feedback") }}',
-        }, NotificationSetting);
+        //$.notify({
+        //    // options
+        //    title: 'Feedback:',
+        //    message: 'Da unsere Klausurenverwaltung neu ist würden wir uns über Freedback und Verbesserungsvorschläge freuen.',
+        //    url: '{{ url_for("main.feedback") }}',
+        //}, NotificationSetting);
     </script>
     {% block scripts %}{% endblock scripts %}
 </body>

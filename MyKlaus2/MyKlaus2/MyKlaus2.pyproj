@@ -74,6 +74,7 @@
     <Folder Include="MyKlaus2\api\" />
     <Folder Include="MyKlaus2\static\" />
     <Folder Include="MyKlaus2\static\css\" />
+    <Folder Include="MyKlaus2\static\documents\" />
     <Folder Include="MyKlaus2\static\js\" />
     <Folder Include="MyKlaus2\static\imgs\" />
     <Folder Include="MyKlaus2\templates\" />
@@ -90,12 +91,18 @@
     <Content Include="MyKlaus2\static\favicon.svg" />
     <Content Include="MyKlaus2\static\imgs\folder-close.svg" />
     <Content Include="MyKlaus2\static\imgs\folder-open.svg" />
+    <Content Include="MyKlaus2\static\imgs\times.svg">
+      <SubType>Code</SubType>
+    </Content>
     <Content Include="MyKlaus2\static\imgs\written_paper.svg" />
     <Content Include="MyKlaus2\static\imgs\paper.svg" />
     <Content Include="MyKlaus2\static\js\bootstrap-notify.js" />
     <Content Include="MyKlaus2\static\js\bootstrap-notify.min.js" />
     <Content Include="MyKlaus2\static\js\jquery.cookie.js" />
     <Content Include="MyKlaus2\static\js\jquery.cookie.min.js">
+      <SubType>Code</SubType>
+    </Content>
+    <Content Include="MyKlaus2\static\js\jquery.filedrop.js">
       <SubType>Code</SubType>
     </Content>
     <Content Include="MyKlaus2\static\js\jquery.tablesorter.js" />
@@ -105,6 +112,9 @@
     <Content Include="MyKlaus2\static\js\jquery.tablesorter.widgets.js" />
     <Content Include="MyKlaus2\static\js\jquery.tablesorter.widgets.min.js" />
     <Content Include="MyKlaus2\templates\list.html">
+      <SubType>Code</SubType>
+    </Content>
+    <Content Include="MyKlaus2\templates\test.html">
       <SubType>Code</SubType>
     </Content>
     <Content Include="settings.ini">

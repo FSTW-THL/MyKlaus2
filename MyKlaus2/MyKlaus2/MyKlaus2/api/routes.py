@@ -4,10 +4,14 @@ from sqlalchemy_paginator import Paginator
 from MyKlaus2 import app
 from MyKlaus2.database import db_session
 from MyKlaus2.models import Exam, Course, Department, ExamType, Professor
+from pydrive.auth import GoogleAuth
+from pydrive.drive import GoogleDrive
 import os.path
 import json
+import zipfile
+import smtplib
 
-api = Blueprint("api", __name__);
+api = Blueprint("api", __name__)
 
 def to_serializable_dict(lst):
     res = []
@@ -55,7 +59,7 @@ def pager(data):
 
     return page, per_page
 
-@api.route('/api/getExam', methods=['GET','POST'])
+@api.route('/api/getExam', methods=['GET'])
 def getExam():
     data = request.args
     exams_query = db_session.query(Exam)
@@ -104,7 +108,7 @@ def getExam():
         has_filter = True
     
     if has_filter:
-        exams_query = exams_query.filter(filter_condition);
+        exams_query = exams_query.filter(filter_condition)
     
     #sortiertung
     exams_query = sort_exams(exams_query, data)
@@ -126,7 +130,7 @@ def getExam():
 
     return jsonify(ret)
 
-@api.route('/api/getList', methods=['GET', 'POST'])
+@api.route('/api/getList', methods=['GET'])
 def getList():
     data = request.args
     if not data.get("ids"):
@@ -205,16 +209,81 @@ def getList():
 
     return jsonify(ret)
 
-@api.route('/api/getDoc', methods=['GET', 'POST'])
+@api.route('/api/getDoc', methods=['GET'])
 def getDoc():
     data = request.args
     if data.get("docID"):
         exam = db_session.query(Exam).filter(Exam.idExam == data.get("docID")).first()
         if exam:
             filePath = os.path.join(app.config['DOCUMENT_PATH'], exam.filePath)
-            print(filePath)
             if os.path.exists(filePath):
-                print(exam.filename)
                 return send_file(filePath)
     
-    return "<h2>Error 404: File not Found!</h2>";
+    return "<h2>Error 404: File not Found!</h2>"
+
+def zip_list(docIDs):
+    toZip = db_session.query(func.concat(app.config['DOCUMENT_PATH'], Exam.filePath)).filter(Exam.idExam.in_(json.loads(docIDs))).all()
+    outputFile = os.path.join(app.config['DOCUMENT_PATH'], 'Zips/', 'filename' + '.zip')
+    
+    zip_file = zipfile.ZipFile(outputFile, 'w')
+    with zip_file:
+        for file in toZip:
+            zip_file.write(file[0])
+    return outputFile
+
+def upload_file(file, filename):
+    gauth = GoogleAuth()
+    gauth.LocalWebserverAuth()
+    drive = GoogleDrive(gauth)
+    f = open(file, "r")
+    drive_file = drive.CreateFile({'title': filename})
+    drive_file.SetContentFile(file)
+    drive_file.Upload()
+    drive_file.InsertPermission({
+        'type': 'anyone',
+        'value': 'anyone',
+        'role': 'reader'})
+    return drive_file['alternateLink']
+
+def send_mail(empfaenger, link):
+    FROM = app.config['MAIL_USERNAME']
+    TO = empfaenger
+    SUBJECT = "Klausuren"
+    TEXT = "Deine Klausuren findest du unter folgendem Link: %s" % link
+    message = """From: %s\nTo: %s\nSubject: %s\n\n%s""" % (FROM, ", ".join(TO), SUBJECT, TEXT)
+    s = smtplib.SMTP(app.config['MAIL_SERVER'], app.config['MAIL_PORT'])
+    s.ehlo()
+    s.starttls()
+    s.login(app.config['MAIL_USERNAME'], app.config['MAIL_PASSWORD'])
+    s.sendmail(app.config['MAIL_USERNAME'], empfaenger, message)
+    s.quit()
+
+@api.route('/api/dlList', methods=['POST'])
+def dlList():
+    data = request.form
+    if data.get("docIDs"):
+        zip_file = zip_list(data.get("docIDs"))
+        filename = os.path.basename(zip_file)
+        path = os.path.abspath(zip_file)[0:0 - len(filename)]
+        return send_from_directory(path,
+                                   filename,
+                                   mimetype="application/zip,application/octet-stream,application/x-zip-compressed,multipart/x-zip",
+                                   as_attachment=True)
+    return ""
+
+@api.route('/api/sendList', methods=['POST'])
+def sendList():
+    data = request.form
+    if data.get("docIDs") and data.get("empf"):
+        zip_file = zip_list(data.get("docIDs"))
+        filename = os.path.basename(zip_file)
+        path = os.path.abspath(zip_file)[0:0 - len(filename)]
+
+        url = upload_file(zip_file, filename)
+
+        send_mail(data.get("empf"), url)
+
+        return "Done"
+    return "Fail"
+
+

@@ -7,8 +7,10 @@
     .folder-close{background:url("{{ url_for('static', filename='imgs/folder-close.svg') }}") no-repeat left top;}
     .folder-open{background:url("{{ url_for('static', filename='imgs/folder-open.svg') }}") no-repeat left top;}
     .paper{background:url("{{ url_for('static', filename='imgs/paper.svg') }}") no-repeat left top;}
-    .written-paper{background: url("{{ url_for('static', filename='imgs/written_paper.svg') }}") no-repeat left top;}
+    .written-paper { background: url("{{ url_for('static', filename='imgs/written_paper.svg') }}") no-repeat left top; }
+    .times { background: url("{{ url_for('static', filename='imgs/times.svg') }}") no-repeat left top; }
     tr.selected td{background-color: #a0a6ab;}
+    [data-notify="progressbar"]{margin-bottom:0px;position:absolute;bottom:0px;left:0px;width:100%;height:5px;}
 </style>
 {% endblock styles%}
 

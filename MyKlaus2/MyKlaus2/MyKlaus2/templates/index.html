@@ -82,12 +82,44 @@
     <div class="docoptions mb-3">
         <form class="form-inline justify-content-center">
             <input type="button" value="Herunterladen" class="download btn btn-secondary mr-1" style="width: 130px" />
-            <input type="button" value="Senden (Mail)" class="sendMail btn btn-secondary mr-1" style="width: 130px" />
+            <input type="button" value="Senden (Mail)" class="btn btn-secondary mr-1" style="width: 130px" data-toggle="modal" data-target="#mailModal" />
             <input type="button" value="Merken" class="addList btn btn-secondary mr-1" style="width: 130px" />
             <input type="button" value="Vergessen" class="removeList btn btn-secondary mr-1" style="width: 130px" />
         </form>
     </div>
     <embed class="d-inline-block pdf-viewer" src="" type="application/pdf" style="width:100%;height:0px" />
+</div>
+
+<!-- Mail Model -->
+<div class="modal fade" id="mailModal" tabindex="-1" role="dialog" aria-labelledby="mailModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="mailModalLabel">Dokument Senden</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Um das Dokumente zu senden ben&ouml;tigen wir eine E-Mail Adresse von Ihnen. (Diese wird nicht gespeichert)</p>
+                <form>
+                    <div class="form-row align-items-center">
+                        <label class="sr-only" for="mailField">E-Mail</label>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <div class="input-group-text">E-Mail</div>
+                            </div>
+                            <input type="email" class="form-control" id="mailField">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary closeMailModal" data-dismiss="modal">Schlie&szlig;en</button>
+                <button type="button" class="btn btn-primary sendMail" data-dismiss="modal">Senden</button>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock main %}
 
@@ -97,23 +129,16 @@
 <script src="{{ url_for('static', filename='js/jquery.tablesorter.widgets.min.js') }}"></script>
 <script src="{{ url_for('static', filename='js/jquery.cookie.min.js') }}"></script>
 <script>
-    jQuery.fn.extend({
-        scrollToMe: function () {
-            var x = jQuery(this).offset().top - 100;
-            jQuery('html,body').animate({ scrollTop: x }, 500);
-        }
-    });
-
     $(function () {
         var currentDocID = -1;
         var docList = [];
         var url = "/";
 
         $.cookie.json = true;
-        
+
         if (localStorage.getItem('pdf-viewer-doclist') != null)
             docList = JSON.parse(localStorage.getItem('pdf-viewer-doclist'));
-        
+
         setMemorylistNumber();
 
         function onList(id) {
@@ -127,7 +152,31 @@
         $('.download').click(function () {
             window.open(url, '_blank');
         });
-        $('.sendMail').click(function () { });
+        $('.sendMail').click(function () {
+            $.notify({
+                message: "Die E-Mail wird vorbereitet bitte schlie&szlig;en Sie die Seite nicht."
+            });
+
+            var data = { docIDs: '[' + currentDocID + ']', empf: $('#mailField').val() };
+            $('#mailField').val("");
+            $.ajax({
+                method: "POST",
+                url: "{{ url_for('api.sendList') }}",
+                data: data
+            })
+                .done(function (msg) {
+                    if (msg != "Done") {
+                        NotificationSetting['type'] = "danger";
+                        $.notify({
+                            message: "Es ist ein Fehler aufgetreten bitte versuchen Sie es erneut. Sollte der Fehler anhalten kontaktiern Sie einen Administrator."
+                        }, NotificationSetting);
+                        return;
+                    }
+                    $.notify({
+                        message: "Der Empfang der E-Mail kann einige Minuten dauern. Sollte Sie nach 1 Stunde kein Nachricht erhalten haben melden Sie sich bitte beim Administrator."
+                    }, NotificationSetting);
+                });
+        });
         $('.addList').click(function () {
             docList.push(currentDocID);
             localStorage.setItem('pdf-viewer-doclist', JSON.stringify(docList));

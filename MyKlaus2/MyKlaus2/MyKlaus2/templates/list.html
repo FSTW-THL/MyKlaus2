@@ -4,8 +4,8 @@
 <div class="page mb-3">
     <div class="pb-3 mb-3 border-bottom">
         <form class="form-inline justify-content-center">
-            <input type="button" value="Liste Herunterladen" class="download btn btn-secondary mr-1" style="width: 170px" />
-            <input type="button" value="Liste Senden (Mail)" class="sendMail btn btn-secondary mr-1" style="width: 170px" />
+            <input type="button" value="Liste Herunterladen" class="downloadList btn btn-secondary mr-1" style="width: 170px" />
+            <input type="button" value="Liste Senden (Mail)" class="btn btn-secondary mr-1" style="width: 170px" data-toggle="modal" data-target="#mailModal" />
         </form>
     </div>
     <div class="table-responsive">
@@ -55,6 +55,38 @@
     </div>
 </div>
 <embed class="d-inline-block pdf-viewer" src="" type="application/pdf" style="width:100%;height:0px" />
+
+<!-- Mail Model -->
+<div class="modal fade" id="mailModal" tabindex="-1" role="dialog" aria-labelledby="mailModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="mailModalLabel">Liste Senden</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Um die Dokumente zu senden ben&ouml;tigen wir eine E-Mail Adresse von Ihnen. (Diese wird nicht gespeichert)</p>
+                <form>
+                    <div class="form-row align-items-center">
+                        <label class="sr-only" for="mailField">E-Mail</label>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <div class="input-group-text">E-Mail</div>
+                            </div>
+                            <input type="email" class="form-control" id="mailField">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary closeMailModal" data-dismiss="modal">Schlie&szlig;en</button>
+                <button type="button" class="btn btn-primary sendMailList" data-dismiss="modal">Senden</button>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock main %}
 
 {% block scripts %}
@@ -63,13 +95,6 @@
 <script src="{{ url_for('static', filename='js/jquery.tablesorter.widgets.min.js') }}"></script>
 <script src="{{ url_for('static', filename='js/jquery.cookie.min.js') }}"></script>
 <script>
-    jQuery.fn.extend({
-        scrollToMe: function () {
-            var x = jQuery(this).offset().top - 100;
-            jQuery('html,body').animate({ scrollTop: x }, 500);
-        }
-    });
-
     $(function () {
         var currentDocID = -1;
         var docList = [];
@@ -90,10 +115,11 @@
         }
 
         var $table = $("#memoryList")
-            .on('click', 'tbody tr', function () {
-                currentDocID = $(this).children().first().attr('id');
-                $(this).parent().find("tr.selected").removeClass("selected");
-                $(this).addClass("selected");
+            .on('click', 'tbody tr td[data-clickable!="false"]', function () {
+                $this = $(this).parent();
+                currentDocID = $this.children().first().attr('id');
+                $this.parent().find("tr.selected").removeClass("selected");
+                $this.addClass("selected");
                 if (onList(currentDocID)) {
                     $('.removeList').show();
                     $('.addList').hide();
@@ -105,6 +131,19 @@
                 $('.page.border-top').show()
                 $('.pdf-viewer').attr('src', url).attr('style', 'width:100%;height:' + ($(window).height() - 140) + 'px');
                 $('.pdf-viewer').scrollToMe();
+            })
+            .on('click', 'tbody tr td[data-clickable="false"]', function () {
+                $this = $(this).parent(); //tr
+                currentDocID = $this.children().first().attr('id');
+
+                docList.splice(docList.indexOf(currentDocID), 1);
+                localStorage.setItem('pdf-viewer-doclist', JSON.stringify(docList));
+
+                $table.find($this).remove();
+                setMemorylistNumber();
+
+                $('.page.border-top').hide()
+                $('.pdf-viewer').attr('src', '').attr('style', 'width:100%;height:0px');
             })
             .tablesorter({
                 resort: true,
@@ -135,7 +174,11 @@
                                 "<td>" + item.Typ + "</td>" +
                                 "<td>" + item.Dozent + "</td>" +
                                 "<td>" + item.Semester + "</td>" +
-                                "<td>Aktionen</td>";
+                                "<td class='p-0' data-clickable='false'>" +
+                                    "<button class='btn icon-btn'>" +
+                                        "<a class='svg-img times pl-3'>Vergessen</a>" +
+                                    "</button>" +
+                                "</td>";
                             $("<tr/>").html(html).appendTo(table);
                         });
                         return [count];
@@ -164,6 +207,99 @@
 
         $.tablesorter.filter.bindSearch($table, $('.search'));
 
+        $('.downloadList').click(function () {
+            NotificationSetting['showProgressbar'] = true;
+            NotificationSetting['allow_dismiss'] = false;
+            NotificationSetting['delay'] = 0;
+
+            var notify = $.notify({
+                message: "Downlaod wird vorbereitet. Schlie&szlig;en Sie die Seite nicht!"
+            }, NotificationSetting);
+
+            NotificationSetting['showProgressbar'] = false;
+            NotificationSetting['allow_dismiss'] = true;
+            NotificationSetting['delay'] = 5000;
+
+            var req = new XMLHttpRequest();
+            var params = 'docIDs=[' + docList + ']';
+
+            req.open('POST', '{{ url_for("api.dlList") }}', true);
+
+            req.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+
+            req.addEventListener("progress", function (evt) {
+                if (evt.lengthComputable) {
+                    var percentComplete = Math.round(evt.loaded / evt.total * 100);
+                    notify.update('progress', percentComplete);
+                }
+            }, false);
+            req.addEventListener("load", function (evt) {
+                notify.update({
+                    message: 'Download abgeschlossen.',
+                });
+                setTimeout(function () {
+                    notify.close();
+                }, 2500);
+            });
+
+            req.responseType = "blob";
+            req.onreadystatechange = function () {
+                if (req.readyState === 4 && req.status === 200) {
+                    var filename = 'Documents.zip';
+                    if (typeof window.chrome !== 'undefined') {
+                        //Do it for Chrome
+                        var link = document.createElement('a');
+                        link.href = window.URL.createObjectURL(req.response);
+                        link.download = filename;
+                        link.click();
+                    } else if (typeof window.navigator.msSaveBlob !== 'undefined') {
+                        //Do it for IE
+                        var blob = new Blob([req.response], { type: 'application/force-download' });
+                        window.navigator.msSaveBlob(blob, filename);
+                    } else {
+                        //Do it for Firefox
+                        var file = new File([req.response], filename, { type: 'application/force-download' });
+                        window.open(URL.createObjectURL(file));
+                    }
+
+                    docList = [];
+                    localStorage.setItem('pdf-viewer-doclist', JSON.stringify(docList));
+                    $table.find('tbody').empty();
+                    setMemorylistNumber();
+                }
+            };
+
+            req.send(params);
+        });
+        $('.sendMailList').click(function () {
+            $.notify({
+                message: "Die E-Mail wird vorbereitet bitte schlie&szlig;en Sie die Seite nicht."
+            });
+
+            var data = { docIDs: '[' + currentDocID + ']', empf: $('#mailField').val() };
+            $('#mailField').val("");
+            $.ajax({
+                method: "POST",
+                url: "{{ url_for('api.sendList') }}",
+                data: data
+            })
+                .done(function (msg) {
+                    if (msg != "Done") {
+                        NotificationSetting['type'] = "danger";
+                        $.notify({
+                            message: "Es ist ein Fehler aufgetreten bitte versuchen Sie es erneut. Sollte der Fehler anhalten kontaktiern Sie einen Administrator."
+                        }, NotificationSetting);
+                        return;
+                    }
+                    docList = [];
+                    localStorage.setItem('pdf-viewer-doclist', JSON.stringify(docList));
+                    $table.find('tbody').empty();
+                    setMemorylistNumber();
+                    $.notify({
+                        message: "Der Empfang der E-Mail kann einige Minuten dauern. Sollte Sie nach 1 Stunde kein Nachricht erhalten haben melden Sie sich bitte beim Administrator."
+                    }, NotificationSetting);
+                });
+        });
     });
 </script>
 {% endblock scripts %}
